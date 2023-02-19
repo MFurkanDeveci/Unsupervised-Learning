@@ -139,3 +139,42 @@ final_df.groupby("segment").agg({"order_num_total_ever_online":["mean","min","ma
                                   "customer_value_total_ever_online":["mean","min","max"],
                                   "recency":["mean","min","max"],
                                   "tenure":["mean","min","max","count"]})
+# Görev 3: Hierarchical Clustering ile Müşteri Segmentasyonu
+
+# Adım 1: Görev 2'de standırlaştırdığınız dataframe'i kullanarak optimum küme sayısını belirleyiniz.
+
+sc = MinMaxScaler((0, 1))
+df = sc.fit_transform(df[num_cols])
+df[0:5]
+
+# birleştirici bir kümeleme yaptığımız için average seçtik.
+hc_average = linkage(df, "average")
+
+plt.figure(figsize=(10, 5))
+plt.title("Hiyerarşik Kümeleme Dendogramı")
+plt.xlabel("Gözlem Birimleri")
+plt.ylabel("Uzaklıklar")
+dendrogram(hc_average,
+           leaf_font_size=10)
+plt.show(blok=True)
+
+# Adım 2: Modelinizi oluşturunuz ve müşterileriniz segmentleyiniz.
+
+from sklearn.cluster import AgglomerativeClustering
+
+# birden fazla linkage yöntemi vardır biz burda average kullandık.
+cluster = AgglomerativeClustering(n_clusters=5, linkage="average")
+
+clusters = cluster.fit_predict(df)
+
+df = pd.read_csv("Datasets/flo_data_20k.csv")
+df["hi_cluster_no"] = clusters
+
+df["hi_cluster_no"] = df["hi_cluster_no"] + 1
+
+df["kmeans_cluster_no"] = df["kmeans_cluster_no"] + 1
+df["kmeans_cluster_no"] = clusters_kmeans
+
+# Adım 3: Her bir segmenti istatistiksel olarak inceleyeniz.
+
+df.head()
